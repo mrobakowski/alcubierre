@@ -5,3 +5,5 @@ authors = ["mrobakowski <mikolaj.rob@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+alcubierre-derive = {path = "../alcubierre-derive"}
+inventory = "0.1.3"
