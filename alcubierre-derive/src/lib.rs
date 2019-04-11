@@ -61,7 +61,6 @@ pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
         path(#path)
             #(#params)*
             .map(#fn_ident)
-            // TODO: warp fork with `into_boxed`
             .map(|r| reply::boxed(r)) // TODO: allocation
             .boxed() // TODO: allocation
 
