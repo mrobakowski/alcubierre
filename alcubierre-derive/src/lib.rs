@@ -1,23 +1,51 @@
 #![feature(proc_macro_diagnostic)]
 
 extern crate proc_macro;
+
 use proc_macro::TokenStream;
 
 use syn::*;
 use syn::spanned::Spanned;
 use quote::quote;
 
+#[derive(Debug)]
+struct Args {
+    path: Option<LitStr>,
+}
+
+impl parse::Parse for Args {
+    fn parse(input: &parse::ParseBuffer) -> syn::Result<Self> {
+        if input.is_empty() { return Ok(Args { path: None }); }
+
+        let path = input.parse::<LitStr>().or_else(|_| {
+            let path_ident: Ident = input.parse::<Ident>()?;
+
+            if path_ident.to_string() != "path" {
+                return Err(syn::Error::new(
+                    path_ident.span(),
+                    "only `path` attribute is supported currently",
+                ));
+            }
+
+            input.parse::<Token![=]>()?;
+            input.parse::<LitStr>()
+        })?;
+
+        Ok(Args { path: Some(path) })
+    }
+}
+
 #[proc_macro_attribute]
-pub fn get(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item: Item = parse_macro_input!(item as Item);
 
-    dbg!(_attr);
+    let attr: Args = dbg!(parse_macro_input!(attr as Args));
 
     let fun = match item {
         Item::Fn(fun) => fun,
         _ => {
             item.span().unwrap().error("only functions are supported right now").emit();
-            return TokenStream::new()
+            return TokenStream::new();
         }
     };
 
@@ -25,16 +53,27 @@ pub fn get(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let path: String = format!("/{}", name);
 
     let fn_ident = fun.ident.clone();
-    let underscores: Vec<_> = fun.decl.inputs.iter().map(|_| quote!(_)).collect();
+    let params: Vec<_> = fun.decl.inputs.iter()
+        .map(|_| quote!(.and(::alcubierre::warp::path::param())))
+        .collect();
+    let warp_filter = quote! {{
+        use ::alcubierre::warp::*;
+        ::alcubierre::warp::path(#path)
+            #(#params)*
+            .map(#fn_ident)
+            // TODO: warp fork with `into_boxed`
+            .map(|r| ::alcubierre::warp::Reply::into_boxed(r)) // TODO: allocation
+            .boxed() // TODO: allocation
+
+    }};
 
     let to_emit = quote! {
         #fun
-        ::inventory::submit!(::alcubierre::Route::new(
-            #name,
-            #path,
-            // we need to erase the uniqueness, so Any is more friendly
-            #fn_ident as fn(#(#underscores),*) -> _)
-        );
+        ::inventory::submit!(::alcubierre::Route {
+            name: #name,
+            path: #path,
+            filter: #warp_filter
+        });
     };
 
     println!("{}", to_emit);
