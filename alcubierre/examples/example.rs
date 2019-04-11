@@ -12,11 +12,8 @@ fn name() -> &'static str {
     "Mikołaj Robakowski"
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let routes = alc::routes();
-    println!("Routes: {:#?}", routes);
-
+fn main() {
+    println!("Server starting at http://localhost:2137/");
+    println!("Press Ctrl+C to exit...");
     alc::engage(([0, 0, 0, 0], 2137));
-
-    Ok(())
 }
