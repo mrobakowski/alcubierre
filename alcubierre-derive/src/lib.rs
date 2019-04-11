@@ -58,7 +58,7 @@ pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
         .collect();
     let warp_filter = quote! {{
         use ::alcubierre::warp::*;
-        path(#path)
+        path(#name)
             #(#params)*
             .map(#fn_ident)
             .map(|r| reply::boxed(r)) // TODO: allocation
