@@ -39,7 +39,7 @@ impl parse::Parse for Args {
 pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item: Item = parse_macro_input!(item as Item);
 
-    let attr: Args = dbg!(parse_macro_input!(attr as Args));
+    let attr: Args = parse_macro_input!(attr as Args);
 
     let fun = match item {
         Item::Fn(fun) => fun,
@@ -74,8 +74,6 @@ pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
             filter: #warp_filter
         });
     };
-
-    println!("{}", to_emit);
 
     to_emit.into()
 }

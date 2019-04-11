@@ -1,7 +1,5 @@
 extern crate alcubierre as alc;
 
-use std::error::Error;
-
 #[alc::get]
 fn greet(name: String) -> String {
     format!("Hello, {}", name)
