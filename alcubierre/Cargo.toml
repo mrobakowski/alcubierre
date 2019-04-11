@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 alcubierre-derive = {path = "../alcubierre-derive"}
 inventory = "0.1.3"
-warp = "0.1.15"
+warp = { git = "https://github.com/mrobakowski/warp", rev = "e9451dd"}
 futures = "0.1.26"
 http = "0.1.17"
 hyper = "0.12.27"

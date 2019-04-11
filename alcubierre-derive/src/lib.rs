@@ -54,15 +54,15 @@ pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let fn_ident = fun.ident.clone();
     let params: Vec<_> = fun.decl.inputs.iter()
-        .map(|_| quote!(.and(::alcubierre::warp::path::param())))
+        .map(|_| quote!(.and(path::param())))
         .collect();
     let warp_filter = quote! {{
         use ::alcubierre::warp::*;
-        ::alcubierre::warp::path(#path)
+        path(#path)
             #(#params)*
             .map(#fn_ident)
             // TODO: warp fork with `into_boxed`
-            .map(|r| ::alcubierre::warp::Reply::into_boxed(r)) // TODO: allocation
+            .map(|r| reply::boxed(r)) // TODO: allocation
             .boxed() // TODO: allocation
 
     }};
