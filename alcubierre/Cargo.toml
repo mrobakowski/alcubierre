@@ -11,3 +11,6 @@ warp = { git = "https://github.com/mrobakowski/warp", rev = "e9451dd"}
 futures = "0.1.26"
 http = "0.1.17"
 hyper = "0.12.27"
+
+[dev-dependencies]
+serde = { version = "1.0.90", features = ["derive"] }

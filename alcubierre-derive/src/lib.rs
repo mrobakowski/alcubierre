@@ -39,7 +39,7 @@ impl parse::Parse for Args {
 pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item: Item = parse_macro_input!(item as Item);
 
-    let attr: Args = parse_macro_input!(attr as Args);
+    let Args { path } = parse_macro_input!(attr as Args);
 
     let fun = match item {
         Item::Fn(fun) => fun,
@@ -50,16 +50,29 @@ pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     let name: String = fun.ident.to_string();
-    let path: String = format!("/{}", name);
+
+    let path = match path {
+        Some(pathLiteral) => {
+            let path_str = pathLiteral.value();
+            // TODO: parse path and do path param extraction based on that
+            quote! { compile_error!("specifying path doesn't work yet!") }
+        }
+        None => {
+            let params: Vec<_> = fun.decl.inputs.iter()
+                .map(|_| quote!(and(path::param())))
+                .collect();
+
+            quote! {
+                path(#name)
+                    #(.#params)*
+            }
+        }
+    };
 
     let fn_ident = fun.ident.clone();
-    let params: Vec<_> = fun.decl.inputs.iter()
-        .map(|_| quote!(.and(path::param())))
-        .collect();
     let warp_filter = quote! {{
-        use ::alcubierre::warp::*;
-        path(#name)
-            #(#params)*
+        use alcubierre::warp::*;
+        #path
             .map(#fn_ident)
             .map(|r| reply::boxed(r)) // TODO: allocation
             .boxed() // TODO: allocation
@@ -68,9 +81,9 @@ pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let to_emit = quote! {
         #fun
-        ::inventory::submit!(::alcubierre::Route {
+        inventory::submit!(alcubierre::Route {
             name: #name,
-            path: #path,
+            mod_path: module_path!(),
             filter: #warp_filter
         });
     };
