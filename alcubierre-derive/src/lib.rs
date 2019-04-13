@@ -81,7 +81,7 @@ pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let to_emit = quote! {
         #fun
-        alcubierre::inventory::submit!(alcubierre::Route {
+        alcubierre::inventory::submit!(#![crate=alcubierre] alcubierre::Route {
             name: #name,
             mod_path: module_path!(),
             filter: #warp_filter
