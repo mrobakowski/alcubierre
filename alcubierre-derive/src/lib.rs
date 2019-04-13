@@ -1,4 +1,4 @@
-#![feature(proc_macro_diagnostic)]
+//#![feature(proc_macro_diagnostic)]
 
 extern crate proc_macro;
 
@@ -44,8 +44,10 @@ pub fn get(attr: TokenStream, item: TokenStream) -> TokenStream {
     let fun = match item {
         Item::Fn(fun) => fun,
         _ => {
-            item.span().unwrap().error("only functions are supported right now").emit();
-            return TokenStream::new();
+            return TokenStream::from(syn::Error::new(
+                item.span(),
+                "only functions are supported right now"
+            ).to_compile_error());
         }
     };
 
