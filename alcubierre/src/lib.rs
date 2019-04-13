@@ -1,6 +1,7 @@
 pub use alcubierre_derive::*;
 use inventory::iter;
 pub use warp;
+pub use inventory;
 use warp::{Filter, Reply};
 use warp::filters::BoxedFilter;
 use std::net::SocketAddr;
